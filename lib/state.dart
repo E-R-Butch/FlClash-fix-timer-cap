@@ -302,10 +302,12 @@ class GlobalState {
 
   Future<void> _initApp() async {
     FlutterError.onError = (details) {
-      commonPrint.log(
-        'exception: ${details.exception} stack: ${details.stack}',
-        logLevel: LogLevel.warning,
-      );
+      Future.microtask(() {
+        commonPrint.log(
+          'exception: ${details.exception} stack: ${details.stack}',
+          logLevel: LogLevel.warning,
+        );
+      });
     };
     container.read(systemActionProvider.notifier).updateTray();
     container.read(profilesActionProvider.notifier).autoUpdateProfiles();

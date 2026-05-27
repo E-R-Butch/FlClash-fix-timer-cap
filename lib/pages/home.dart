@@ -287,7 +287,7 @@ class HomeBackScopeContainer extends ConsumerWidget {
         } else {
           await globalState.container
               .read(systemActionProvider.notifier)
-              .handleBackOrExit();
+              .handleClose();
         }
         return false;
       },
