@@ -52,10 +52,9 @@ packages:
   app_links:
     dependency: "direct main"
     description:
-      name: app_links
-      sha256: "4ec328cd9fd51fd0e7eb8870a9612c1fde0f091901932238c4f4e60b5f7f1315"
-      url: "https://pub.dev"
-    source: hosted
+      path: "plugins/app_links"
+      relative: true
+    source: path
     version: "7.1.2"
   app_links_linux:
     dependency: transitive
