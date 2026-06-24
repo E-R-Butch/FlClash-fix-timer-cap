@@ -3,13 +3,23 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'generated/clash_config.freezed.dart';
+
 part 'generated/clash_config.g.dart';
 
 const defaultClashConfig = PatchClashConfig();
 
 const defaultTun = Tun();
 const defaultDns = Dns();
-const defaultGeoXUrl = GeoXUrl();
+const defaultGeoXUrl = {
+  GeoResource.MMDB:
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
+  GeoResource.ASN:
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
+  GeoResource.GEOIP:
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat',
+  GeoResource.GEOSITE:
+      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
+};
 
 const defaultMixedPort = 7890;
 const defaultKeepAliveInterval = 30;
@@ -310,42 +320,6 @@ abstract class Dns with _$Dns {
 }
 
 @freezed
-abstract class GeoXUrl with _$GeoXUrl {
-  const factory GeoXUrl({
-    @Default(
-      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.metadb',
-    )
-    String mmdb,
-    @Default(
-      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/GeoLite2-ASN.mmdb',
-    )
-    String asn,
-    @Default(
-      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geoip.dat',
-    )
-    String geoip,
-    @Default(
-      'https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat',
-    )
-    String geosite,
-  }) = _GeoXUrl;
-
-  factory GeoXUrl.fromJson(Map<String, Object?> json) =>
-      _$GeoXUrlFromJson(json);
-
-  factory GeoXUrl.safeFormJson(Map<String, Object?>? json) {
-    if (json == null) {
-      return defaultGeoXUrl;
-    }
-    try {
-      return GeoXUrl.fromJson(json);
-    } catch (_) {
-      return defaultGeoXUrl;
-    }
-  }
-}
-
-@freezed
 abstract class Rule with _$Rule {
   const factory Rule({
     @Default(-1) int id,
@@ -542,6 +516,11 @@ abstract class ClashConfig with _$ClashConfig {
       _$ClashConfigFromJson(json);
 }
 
+extension GeoResourceUrlMapExt on Map<GeoResource, String> {
+  Map<String, String> get raw =>
+      map((key, value) => MapEntry(key.value, value));
+}
+
 @freezed
 abstract class PatchClashConfig with _$PatchClashConfig {
   const factory PatchClashConfig({
@@ -568,8 +547,8 @@ abstract class PatchClashConfig with _$PatchClashConfig {
     @Default(defaultTun) @JsonKey(fromJson: Tun.safeFormJson) Tun tun,
     @Default(defaultDns) @JsonKey(fromJson: Dns.safeDnsFromJson) Dns dns,
     @Default(defaultGeoXUrl)
-    @JsonKey(name: 'geox-url', fromJson: GeoXUrl.safeFormJson)
-    GeoXUrl geoXUrl,
+    @JsonKey(name: 'geox-url')
+    Map<GeoResource, String> geoXUrl,
     @Default(GeodataLoader.memconservative)
     @JsonKey(name: 'geodata-loader')
     GeodataLoader geodataLoader,

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/core.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/config.dart';
 import 'package:fl_clash/state.dart';
@@ -10,68 +11,59 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' hide context;
 
-@immutable
-class GeoItem {
-  final String label;
-  final String key;
-  final String fileName;
-
-  const GeoItem({
-    required this.label,
-    required this.key,
-    required this.fileName,
-  });
-}
-
 class ResourcesView extends StatelessWidget {
   const ResourcesView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const geoItems = <GeoItem>[
-      GeoItem(label: 'GEOIP', fileName: GEOIP, key: 'geoip'),
-      GeoItem(label: 'GEOSITE', fileName: GEOSITE, key: 'geosite'),
-      GeoItem(label: 'MMDB', fileName: MMDB, key: 'mmdb'),
-      GeoItem(label: 'ASN', fileName: ASN, key: 'asn'),
-    ];
-
     return CommonScaffold(
       title: context.appLocalizations.resources,
-      body: ListView.separated(
-        itemBuilder: (_, index) {
-          final geoItem = geoItems[index];
-          return GeoDataListItem(geoItem: geoItem);
-        },
-        separatorBuilder: (BuildContext context, int index) {
-          return const Divider(height: 0);
-        },
-        itemCount: geoItems.length,
+      body: ListView(
+        children: [
+          generateSectionV3(
+            title: '配置',
+            items: [
+              const _GeoDataListItem(GeoResource.GEOIP),
+              const _GeoDataListItem(GeoResource.GEOSITE),
+              const _GeoDataListItem(GeoResource.MMDB),
+              const _GeoDataListItem(GeoResource.ASN),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class GeoDataListItem extends StatefulWidget {
-  final GeoItem geoItem;
+class _GeoDataListItem extends StatefulWidget {
+  final GeoResource type;
 
-  const GeoDataListItem({super.key, required this.geoItem});
+  const _GeoDataListItem(this.type);
 
   @override
-  State<GeoDataListItem> createState() => _GeoDataListItemState();
+  State<_GeoDataListItem> createState() => _GeoDataListItemState();
 }
 
-class _GeoDataListItemState extends State<GeoDataListItem> {
+class _GeoDataListItemState extends State<_GeoDataListItem> {
   final isUpdating = ValueNotifier<bool>(false);
 
-  GeoItem get geoItem => widget.geoItem;
+  String get label => widget.type.name;
+
+  String get fileName {
+    return switch (widget.type) {
+      GeoResource.MMDB => MMDB,
+      GeoResource.ASN => ASN,
+      GeoResource.GEOIP => GEOIP,
+      GeoResource.GEOSITE => GEOSITE,
+    };
+  }
 
   Future<void> _updateUrl(String url, WidgetRef ref) async {
-    final defaultMap = defaultGeoXUrl.toJson();
     final newUrl = await globalState.showCommonDialog<String>(
       child: UpdateGeoUrlFormDialog(
-        title: geoItem.label,
+        title: label,
         url: url,
-        defaultValue: defaultMap[geoItem.key],
+        defaultValue: defaultGeoXUrl[widget.type],
       ),
     );
     if (newUrl != null && newUrl != url && mounted) {
@@ -80,13 +72,13 @@ class _GeoDataListItemState extends State<GeoDataListItem> {
           throw 'Invalid url';
         }
         ref.read(patchClashConfigProvider.notifier).update((state) {
-          final map = state.geoXUrl.toJson();
-          map[geoItem.key] = newUrl;
-          return state.copyWith(geoXUrl: GeoXUrl.fromJson(map));
+          return state.copyWith(
+            geoXUrl: {...state.geoXUrl, widget.type: newUrl},
+          );
         });
       } catch (e) {
         globalState.showMessage(
-          title: geoItem.label,
+          title: label,
           message: TextSpan(text: e.toString()),
         );
       }
@@ -107,7 +99,7 @@ class _GeoDataListItemState extends State<GeoDataListItem> {
         final appLocalizations = context.appLocalizations;
         final url = ref.watch(
           patchClashConfigProvider.select(
-            (state) => state.geoXUrl.toJson()[geoItem.key],
+            (state) => state.geoXUrl[widget.type],
           ),
         );
         if (url == null) {
@@ -118,7 +110,7 @@ class _GeoDataListItemState extends State<GeoDataListItem> {
           children: [
             const SizedBox(height: 6),
             FutureBuilder<FileInfo>(
-              future: _getGeoFileLastModified(geoItem.fileName),
+              future: _getGeoFileLastModified(fileName),
               builder: (_, snapshot) {
                 final height = globalState.measure.bodyMediumHeight;
                 return SizedBox(
@@ -196,9 +188,7 @@ class _GeoDataListItemState extends State<GeoDataListItem> {
   Future<void> updateGeoDateItem() async {
     isUpdating.value = true;
     try {
-      final message = await coreController.updateGeoData(
-        UpdateGeoDataParams(geoName: geoItem.fileName, geoType: geoItem.label),
-      );
+      final message = await coreController.updateGeoData(label);
       if (message.isNotEmpty) throw message;
     } catch (e) {
       isUpdating.value = false;
@@ -218,7 +208,7 @@ class _GeoDataListItemState extends State<GeoDataListItem> {
   Widget build(BuildContext context) {
     return ListItem(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Text(geoItem.label),
+      title: Text(label),
       subtitle: _buildSubtitle(),
     );
   }

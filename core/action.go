@@ -137,9 +137,8 @@ func handleAction(action *Action, result ActionResult) {
 			result.success(err.Error())
 			return
 		}
-		geoType := params["geo-type"]
-		geoName := params["geo-name"]
-		handleUpdateGeoData(geoType, geoName, func(value string) {
+		geoType := action.Data.(string)
+		handleUpdateGeoData(geoType, func(value string) {
 			result.success(value)
 		})
 		return

@@ -331,6 +331,28 @@ enum DashboardWidget {
 
 enum GeodataLoader { standard, memconservative }
 
+enum GeoResource {
+  @JsonValue('mmdb')
+  MMDB,
+  @JsonValue('asn')
+  ASN,
+  @JsonValue('geoip')
+  GEOIP,
+  @JsonValue('geosite')
+  GEOSITE,
+}
+
+extension GeoResourceExt on GeoResource {
+  String get value {
+    return switch (this) {
+      GeoResource.MMDB => 'mmdb',
+      GeoResource.ASN => 'asn',
+      GeoResource.GEOIP => 'geoip',
+      GeoResource.GEOSITE => 'geosite',
+    };
+  }
+}
+
 enum PageLabel {
   dashboard,
   proxies,

@@ -17,6 +17,44 @@ T roundTrip<T>(
 }
 
 void main() {
+  group('GeoResource JSON', () {
+    test('uses lowercase GeoResource values in JSON', () {
+      final encoded = jsonEncode({'key': GeoResource.GEOIP});
+
+      expect(encoded, '{"key":"geoip"}');
+    });
+
+    test('parses lowercase GeoResource values from JSON', () {
+      expect(GeoResource.fromJson('mmdb'), GeoResource.MMDB);
+      expect(GeoResource.fromJson('asn'), GeoResource.ASN);
+      expect(GeoResource.fromJson('geoip'), GeoResource.GEOIP);
+      expect(GeoResource.fromJson('geosite'), GeoResource.GEOSITE);
+    });
+
+    test('GeoXUrl defaults use GeoResource keys', () {
+      expect(defaultGeoXUrl.keys, GeoResource.values);
+    });
+
+    test('PatchClashConfig serializes geoXUrl map with lowercase keys', () {
+      final json = const PatchClashConfig(
+        geoXUrl: {GeoResource.GEOIP: 'https://example.com/geoip.dat'},
+      ).toJson();
+
+      expect(json['geox-url'], {'geoip': 'https://example.com/geoip.dat'});
+    });
+
+    test('PatchClashConfig parses geoXUrl map with GeoResource keys', () {
+      final config = PatchClashConfig.fromJson({
+        'geox-url': {'mmdb': 'https://example.com/mmdb'},
+      });
+
+      expect(config.geoXUrl, {
+        ...defaultGeoXUrl,
+        GeoResource.MMDB: 'https://example.com/mmdb',
+      });
+    });
+  });
+
   group('AppSettingProps JSON round-trip', () {
     test('default values survive round-trip', () {
       const props = AppSettingProps();
