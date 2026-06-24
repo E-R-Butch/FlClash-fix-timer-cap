@@ -129,14 +129,8 @@ func handleAction(action *Action, result ActionResult) {
 	case getExternalProviderMethod:
 		externalProviderName := action.Data.(string)
 		result.success(handleGetExternalProvider(externalProviderName))
+		return
 	case updateGeoDataMethod:
-		paramsString := action.Data.(string)
-		var params = map[string]string{}
-		err := json.Unmarshal([]byte(paramsString), &params)
-		if err != nil {
-			result.success(err.Error())
-			return
-		}
 		geoType := action.Data.(string)
 		handleUpdateGeoData(geoType, func(value string) {
 			result.success(value)

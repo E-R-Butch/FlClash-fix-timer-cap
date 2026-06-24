@@ -16,38 +16,34 @@ class ResourcesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const geoResources = GeoResource.values;
     return CommonScaffold(
       title: context.appLocalizations.resources,
-      body: ListView(
-        children: [
-          generateSectionV3(
-            title: '配置',
-            items: [
-              const _GeoDataListItem(GeoResource.GEOIP),
-              const _GeoDataListItem(GeoResource.GEOSITE),
-              const _GeoDataListItem(GeoResource.MMDB),
-              const _GeoDataListItem(GeoResource.ASN),
-            ],
-          ),
-        ],
+      body: ListView.separated(
+        itemBuilder: (_, index) {
+          final geoResource = geoResources[index];
+          return _GeoResourceListItem(geoResource);
+        },
+        separatorBuilder: (BuildContext context, int index) {
+          return const Divider(height: 0);
+        },
+        itemCount: geoResources.length,
       ),
     );
   }
 }
 
-class _GeoDataListItem extends StatefulWidget {
+class _GeoResourceListItem extends StatefulWidget {
   final GeoResource type;
 
-  const _GeoDataListItem(this.type);
+  const _GeoResourceListItem(this.type);
 
   @override
-  State<_GeoDataListItem> createState() => _GeoDataListItemState();
+  State<_GeoResourceListItem> createState() => _GeoResourceListItemState();
 }
 
-class _GeoDataListItemState extends State<_GeoDataListItem> {
+class _GeoResourceListItemState extends State<_GeoResourceListItem> {
   final isUpdating = ValueNotifier<bool>(false);
-
-  String get label => widget.type.name;
 
   String get fileName {
     return switch (widget.type) {
@@ -61,7 +57,7 @@ class _GeoDataListItemState extends State<_GeoDataListItem> {
   Future<void> _updateUrl(String url, WidgetRef ref) async {
     final newUrl = await globalState.showCommonDialog<String>(
       child: UpdateGeoUrlFormDialog(
-        title: label,
+        title: widget.type.name,
         url: url,
         defaultValue: defaultGeoXUrl[widget.type],
       ),
@@ -78,7 +74,7 @@ class _GeoDataListItemState extends State<_GeoDataListItem> {
         });
       } catch (e) {
         globalState.showMessage(
-          title: label,
+          title: widget.type.name,
           message: TextSpan(text: e.toString()),
         );
       }
@@ -188,7 +184,7 @@ class _GeoDataListItemState extends State<_GeoDataListItem> {
   Future<void> updateGeoDateItem() async {
     isUpdating.value = true;
     try {
-      final message = await coreController.updateGeoData(label);
+      final message = await coreController.updateGeoData(widget.type.name);
       if (message.isNotEmpty) throw message;
     } catch (e) {
       isUpdating.value = false;
@@ -208,7 +204,7 @@ class _GeoDataListItemState extends State<_GeoDataListItem> {
   Widget build(BuildContext context) {
     return ListItem(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      title: Text(label),
+      title: Text(widget.type.name),
       subtitle: _buildSubtitle(),
     );
   }

@@ -521,6 +521,19 @@ extension GeoResourceUrlMapExt on Map<GeoResource, String> {
       map((key, value) => MapEntry(key.value, value));
 }
 
+Map<GeoResource, String> _geoXUrlFromJson(Map<String, Object?>? json) {
+  if (json == null) {
+    return defaultGeoXUrl;
+  }
+  return json.map(
+    (key, value) => MapEntry(GeoResource.fromJson(key), value as String),
+  );
+}
+
+Map<String, String> _geoXUrlToJson(Map<GeoResource, String> value) {
+  return value.raw;
+}
+
 @freezed
 abstract class PatchClashConfig with _$PatchClashConfig {
   const factory PatchClashConfig({
@@ -547,7 +560,11 @@ abstract class PatchClashConfig with _$PatchClashConfig {
     @Default(defaultTun) @JsonKey(fromJson: Tun.safeFormJson) Tun tun,
     @Default(defaultDns) @JsonKey(fromJson: Dns.safeDnsFromJson) Dns dns,
     @Default(defaultGeoXUrl)
-    @JsonKey(name: 'geox-url')
+    @JsonKey(
+      name: 'geox-url',
+      fromJson: _geoXUrlFromJson,
+      toJson: _geoXUrlToJson,
+    )
     Map<GeoResource, String> geoXUrl,
     @Default(GeodataLoader.memconservative)
     @JsonKey(name: 'geodata-loader')

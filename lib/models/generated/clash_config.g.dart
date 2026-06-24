@@ -427,12 +427,9 @@ _PatchClashConfig _$PatchClashConfigFromJson(Map<String, dynamic> json) =>
       dns: json['dns'] == null
           ? defaultDns
           : Dns.safeDnsFromJson(json['dns'] as Map<String, Object?>),
-      geoXUrl:
-          (json['geox-url'] as Map<String, dynamic>?)?.map(
-            (k, e) =>
-                MapEntry($enumDecode(_$GeoResourceEnumMap, k), e as String),
-          ) ??
-          defaultGeoXUrl,
+      geoXUrl: json['geox-url'] == null
+          ? defaultGeoXUrl
+          : _geoXUrlFromJson(json['geox-url'] as Map<String, Object?>?),
       geodataLoader:
           $enumDecodeNullable(_$GeodataLoaderEnumMap, json['geodata-loader']) ??
           GeodataLoader.memconservative,
@@ -467,9 +464,7 @@ Map<String, dynamic> _$PatchClashConfigToJson(_PatchClashConfig instance) =>
       'tcp-concurrent': instance.tcpConcurrent,
       'tun': instance.tun,
       'dns': instance.dns,
-      'geox-url': instance.geoXUrl.map(
-        (k, e) => MapEntry(_$GeoResourceEnumMap[k]!, e),
-      ),
+      'geox-url': _geoXUrlToJson(instance.geoXUrl),
       'geodata-loader': _$GeodataLoaderEnumMap[instance.geodataLoader]!,
       'global-ua': instance.globalUa,
       'external-controller':
@@ -494,13 +489,6 @@ const _$LogLevelEnumMap = {
 const _$FindProcessModeEnumMap = {
   FindProcessMode.always: 'always',
   FindProcessMode.off: 'off',
-};
-
-const _$GeoResourceEnumMap = {
-  GeoResource.MMDB: 'mmdb',
-  GeoResource.ASN: 'asn',
-  GeoResource.GEOIP: 'geoip',
-  GeoResource.GEOSITE: 'geosite',
 };
 
 const _$GeodataLoaderEnumMap = {
