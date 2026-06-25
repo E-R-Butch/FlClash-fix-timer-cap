@@ -468,6 +468,7 @@ class _AddOrEditRuleViewState extends ConsumerState<_AddOrEditRuleView> {
       trailing: TextFormField(
         initialValue: content,
         keyboardType: TextInputType.name,
+        inputFormatters: TextInputLimits.limit(TextInputLimits.rule),
         onChanged: (value) {
           ref
               .read(ruleProvider.notifier)

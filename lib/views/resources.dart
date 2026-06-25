@@ -190,6 +190,7 @@ class UpdateGeoUrlFormDialog extends StatelessWidget {
       title: title,
       value: url,
       resetValue: defaultValue,
+      inputFormatters: TextInputLimits.limit(TextInputLimits.url),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return appLocalizations.emptyTip('').trim();

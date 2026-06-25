@@ -84,6 +84,7 @@ class InputDelegate extends Delegate {
   final String? suffixText;
   final Function(String? value) onChanged;
   final FormFieldValidator<String>? validator;
+  final int? maxLength;
 
   final String? resetValue;
 
@@ -94,6 +95,7 @@ class InputDelegate extends Delegate {
     required this.onChanged,
     this.resetValue,
     this.validator,
+    this.maxLength,
   });
 }
 
@@ -379,6 +381,9 @@ class ListItem<T> extends StatelessWidget {
               value: inputDelegate.value,
               suffixText: inputDelegate.suffixText,
               resetValue: inputDelegate.resetValue,
+              inputFormatters: inputDelegate.maxLength == null
+                  ? null
+                  : TextInputLimits.limit(inputDelegate.maxLength!),
               validator: inputDelegate.validator,
             ),
           );
