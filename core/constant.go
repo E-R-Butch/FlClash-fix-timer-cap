@@ -123,11 +123,18 @@ type Message struct {
 }
 
 const (
-	LogMessage     MessageType = "log"
-	DelayMessage   MessageType = "delay"
-	RequestMessage MessageType = "request"
-	LoadedMessage  MessageType = "loaded"
+	LogMessage       MessageType = "log"
+	DelayMessage     MessageType = "delay"
+	RequestMessage   MessageType = "request"
+	LoadedMessage    MessageType = "loaded"
+	GeoUpdateMessage MessageType = "geoUpdate"
 )
+
+type GeoUpdateStatus struct {
+	Type     string `json:"type"`
+	Updating bool   `json:"updating"`
+	Error    string `json:"error,omitempty"`
+}
 
 func (message *Message) Json() (string, error) {
 	data, err := json.Marshal(message)

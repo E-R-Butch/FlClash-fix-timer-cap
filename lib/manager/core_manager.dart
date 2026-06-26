@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/core.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -42,9 +44,10 @@ class _CoreContainerState extends ConsumerState<CoreManager>
         ref.read(setupActionProvider.notifier).updateConfigDebounce();
       }
     });
-    ref.listenManual(
-        appSettingProvider.select((state) => state.openLogs), (prev,
-        next,) {
+    ref.listenManual(appSettingProvider.select((state) => state.openLogs), (
+      prev,
+      next,
+    ) {
       if (next) {
         coreController.startLog();
       } else {
@@ -101,13 +104,21 @@ class _CoreContainerState extends ConsumerState<CoreManager>
     if (ref.read(coreStatusProvider) != CoreStatus.connected) {
       return;
     }
-    ref
-        .read(coreStatusProvider.notifier)
-        .value = CoreStatus.disconnected;
+    ref.read(coreStatusProvider.notifier).value = CoreStatus.disconnected;
     if (WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed) {
       context.showNotifier(message);
     }
     await coreController.shutdown(false);
     super.onCrash(message);
+  }
+
+  @override
+  void onGeoUpdate(String geoType, bool updating, String? error) {
+    final key = GeoResource.fromJson(geoType).updatingKey;
+    ref.read(isUpdatingProvider(key).notifier).value = updating;
+    if (!updating && error != null && error.isNotEmpty) {
+      globalState.showNotifier(error);
+    }
+    super.onGeoUpdate(geoType, updating, error);
   }
 }

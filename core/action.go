@@ -132,9 +132,8 @@ func handleAction(action *Action, result ActionResult) {
 		return
 	case updateGeoDataMethod:
 		geoType := action.Data.(string)
-		handleUpdateGeoData(geoType, func(value string) {
-			result.success(value)
-		})
+		handleUpdateGeoData(geoType)
+		result.success("")
 		return
 	case updateExternalProviderMethod:
 		providerName := action.Data.(string)

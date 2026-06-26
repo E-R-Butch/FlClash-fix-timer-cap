@@ -347,35 +347,22 @@ func handleGetExternalProvider(externalProviderName string) string {
 	return string(data)
 }
 
-func handleUpdateGeoData(geoType string, fn func(value string)) {
+func handleUpdateGeoData(geoType string) {
 	go func() {
 		switch geoType {
 		case "MMDB":
-			err := updater.UpdateMMDB()
-			if err != nil {
-				fn(err.Error())
-				return
-			}
+			updater.UpdateMMDB()
+			return
 		case "ASN":
-			err := updater.UpdateASN()
-			if err != nil {
-				fn(err.Error())
-				return
-			}
+			updater.UpdateASN()
+			return
 		case "GEOIP":
-			err := updater.UpdateGeoIp()
-			if err != nil {
-				fn(err.Error())
-				return
-			}
+			updater.UpdateGeoIp()
+			return
 		case "GEOSITE":
-			err := updater.UpdateGeoSite()
-			if err != nil {
-				fn(err.Error())
-				return
-			}
+			updater.UpdateGeoSite()
+			return
 		}
-		fn("")
 	}()
 }
 
@@ -565,6 +552,19 @@ func init() {
 		sendMessage(Message{
 			Type: LoadedMessage,
 			Data: providerName,
+		})
+	}
+	updater.GeoUpdateHook = func(geoType string, updating bool, updateErr error) {
+		status := GeoUpdateStatus{
+			Type:     geoType,
+			Updating: updating,
+		}
+		if updateErr != nil {
+			status.Error = updateErr.Error()
+		}
+		sendMessage(Message{
+			Type: GeoUpdateMessage,
+			Data: status,
 		})
 	}
 }
